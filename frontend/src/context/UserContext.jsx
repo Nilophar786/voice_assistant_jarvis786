@@ -7,7 +7,7 @@ export const userDataContext = createContext()
 function UserContext({ children }) {
   const navigate = useNavigate()
   // Use localhost with port 8000
-  const serverUrl = 'http://localhost:8000'
+  const serverUrl = 'https://voice-assistant-jarvis786.onrender.com'
 
   const [userData, setUserData] = useState(null)
   const [loading, setLoading] = useState(true)
