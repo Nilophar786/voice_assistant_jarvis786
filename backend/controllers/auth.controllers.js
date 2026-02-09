@@ -19,6 +19,8 @@ export const signUp=async (req,res)=>{
         }
 
 
+
+
         // Check if email already exists
         const existEmail=await User.findOne({email})
         if(existEmail){
