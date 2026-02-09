@@ -22,8 +22,8 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         const allowedOrigins = [
-            "https://voice-assistant-jarvis786-1.onrender.com",
-           
+            "https://voice-assistant-jarvis786.onrender.com","https://aivoiceass.netlify.app","http://localhost:5173"
+
         ];
 
         if (allowedOrigins.indexOf(origin) !== -1) {

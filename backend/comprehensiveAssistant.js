@@ -262,6 +262,7 @@ const comprehensiveAssistantResponse = async (command, assistantName, userName, 
         'german': 'de',
         'mandarin': 'zh',
         'gujarati': 'gu',
+        'marathi': 'mr',
         // Add more languages
       };
       const newLangCode = langMap[newLangName] || 'en';
@@ -1162,6 +1163,7 @@ Available Features:
 
 🌐 Multi-Language Support:
 - Respond in English, Hindi, Marathi, or user's language
+- Support mixed languages like Hinglish (Hindi-English mix) by detecting dominant language
 - Keep JSON structure consistent
 
 🎬 Entertainment:

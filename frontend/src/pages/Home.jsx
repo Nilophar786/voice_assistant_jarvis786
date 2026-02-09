@@ -1585,9 +1585,19 @@ useEffect(() => {
 
   const recognition = new SpeechRecognition();
 
-  recognition.continuous = true;
-  recognition.lang = 'en-IN';
+  // Browser-specific settings for better compatibility
+  const isChrome = navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg');
+  const isEdge = navigator.userAgent.includes('Edg');
+
+  recognition.continuous = !isChrome; // Chrome has issues with continuous mode
+  recognition.lang = 'en-IN'; // Better support for mixed languages (Hinglish, Hindi-English mix)
   recognition.interimResults = false;
+
+  // Chrome-specific settings
+  if (isChrome) {
+    recognition.maxAlternatives = 1;
+    recognition.serviceURI = ''; // Use default service
+  }
 
   recognitionRef.current = recognition;
 
