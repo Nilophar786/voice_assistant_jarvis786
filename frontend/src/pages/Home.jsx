@@ -17,6 +17,7 @@ import FloatingActions from '../components/FloatingActions';
 import DynamicGreeting from '../components/DynamicGreeting';
 import SmartWidgetDashboard from '../components/SmartWidgetDashboard';
 import WeatherModal from '../components/WeatherModal';
+import FeedbackForm from '../components/FeedbackForm';
 import { motion, AnimatePresence } from 'framer-motion';
 function Home() {
   const {userData, serverUrl, setUserData, getAssistantResponse, loading, error} = useContext(userDataContext)
@@ -2028,6 +2029,9 @@ useEffect(() => {
   const [weatherData, setWeatherData] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState(null);
+
+  // Feedback modal state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   useEffect(() => {
     const gradients = [

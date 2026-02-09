@@ -216,6 +216,47 @@ function UserContext({ children }) {
     }
   }
 
+  // Feedback methods
+  const submitFeedback = async (feedbackData) => {
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/feedback/submit`,
+        feedbackData,
+        { withCredentials: true }
+      )
+      return result.data
+    } catch (error) {
+      console.error('submitFeedback error:', error)
+      return null
+    }
+  }
+
+  const getUserFeedback = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/feedback/user`,
+        { withCredentials: true }
+      )
+      return result.data
+    } catch (error) {
+      console.error('getUserFeedback error:', error)
+      return []
+    }
+  }
+
+  const getAverageRating = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/feedback/average`,
+        { withCredentials: true }
+      )
+      return result.data
+    } catch (error) {
+      console.error('getAverageRating error:', error)
+      return { averageRating: 0, totalFeedback: 0 }
+    }
+  }
+
   // Productivity methods
   const addTask = async (task) => {
     try {
