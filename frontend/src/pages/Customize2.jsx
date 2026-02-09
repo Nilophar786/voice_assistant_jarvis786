@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import ParticleBackground from '../components/ParticleBackground';
 
 function Customize2() {
-    const {userData,backendImage,selectedImage,serverUrl,setUserData,customizationData}=useContext(userDataContext)
+    const {userData,backendImage,selectedImage,serverUrl,setUserData,customizationData,refreshUserData}=useContext(userDataContext)
     const [assistantName,setAssistantName]=useState(userData?.assistantName || "")
     const [loading,setLoading]=useState(false)
     const navigate=useNavigate()
@@ -43,16 +43,20 @@ function Customize2() {
             // Add customizationData as required by the backend
             formData.append("customizationData", JSON.stringify(customizationData))
             const result=await axios.post(`${serverUrl}/api/user/update`,formData,{withCredentials:true})
+            console.log("Update result:", result.data)
+
+            // Use refreshUserData to ensure proper state update
+            await refreshUserData()
             setLoading(false)
-            console.log(result.data)
-            setUserData(result.data)
-            // Add a small delay to ensure state update before navigation
+
+            // Navigate after ensuring data is refreshed
             setTimeout(() => {
+                console.log("Navigating to home after refresh...")
                 navigate("/")
-            }, 100)
+            }, 200)
         } catch (error) {
             setLoading(false)
-            console.log(error)
+            console.log("Update error:", error)
         }
     }
 
