@@ -43,10 +43,13 @@ function Customize2() {
             // Add customizationData as required by the backend
             formData.append("customizationData", JSON.stringify(customizationData))
             const result=await axios.post(`${serverUrl}/api/user/update`,formData,{withCredentials:true})
-setLoading(false)
+            setLoading(false)
             console.log(result.data)
             setUserData(result.data)
-            navigate("/")
+            // Add a small delay to ensure state update before navigation
+            setTimeout(() => {
+                navigate("/")
+            }, 100)
         } catch (error) {
             setLoading(false)
             console.log(error)

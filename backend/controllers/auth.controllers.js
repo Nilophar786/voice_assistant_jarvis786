@@ -40,11 +40,12 @@ export const signUp=async (req,res)=>{
         const token=await genToken(user._id)
 
         // Set cookie
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.MONGODB_URL?.includes('render.com');
         res.cookie("token",token,{
             httpOnly:true,
             maxAge:7*24*60*60*1000,
-            sameSite:"None",
-            secure:true
+            sameSite: isProduction ? "None" : "Lax",
+            secure: isProduction
         })
 
         console.log(`User created successfully: ${user.email}`)
@@ -89,11 +90,12 @@ try {
 
     const token=await genToken(user._id)
 
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.MONGODB_URL?.includes('render.com');
     res.cookie("token",token,{
         httpOnly:true,
        maxAge:7*24*60*60*1000,
-       sameSite:"None",
-            secure:true
+       sameSite: isProduction ? "None" : "Lax",
+            secure: isProduction
     })
 
     return res.status(200).json(user)
