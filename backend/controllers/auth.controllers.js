@@ -13,12 +13,6 @@ export const signUp=async (req,res)=>{
         }
 
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if(!emailRegex.test(email)){
-            return res.status(400).json({message:"Please enter a valid email address"})
-        }
-
-
 
 
         // Check if email already exists
@@ -76,11 +70,6 @@ try {
     // Validate required fields
     if(!email || !password){
         return res.status(400).json({message:"Email and password are required"})
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if(!emailRegex.test(email)){
-        return res.status(400).json({message:"Please enter a valid email address"})
     }
 
 
