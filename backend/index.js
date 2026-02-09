@@ -18,7 +18,22 @@ import { generalLimiter, authLimiter, apiLimiter } from "./middlewares/rateLimit
 
 const app=express()
 app.use(cors({
-    origin: true, // Allow all origins
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+            "https://voice-assistant-jarvis786.onrender.com","https://aivoiceass.netlify.app","http://localhost:5173"
+
+        ];
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, true); // Temporarily allow all origins for debugging
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With']
