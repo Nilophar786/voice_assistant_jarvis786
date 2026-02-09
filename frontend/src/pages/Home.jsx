@@ -378,50 +378,166 @@ function Home() {
   }
 
   const speak=(text, language = 'hi')=>{
-    console.log("speak called with text:", text, "language:", language);
-    // Cancel any ongoing speech to avoid queuing
-    synth.cancel();
+    return new Promise(async (resolve) => {
+      console.log("speak called with text:", text, "language:", language);
 
-    const utterence=new SpeechSynthesisUtterance(text)
+      // Cancel any ongoing speech to avoid queuing
+      if (synth) {
+        synth.cancel();
+      }
 
-    // Map language to langCode
-    let langCode = 'en-US'; // default
-    if (language === 'hi') langCode = 'hi-IN';
-    else if (language === 'es') langCode = 'es-ES';
-    else if (language === 'fr') langCode = 'fr-FR';
-    else if (language === 'de') langCode = 'de-DE';
-    else if (language === 'it') langCode = 'it-IT';
-    else if (language === 'pt') langCode = 'pt-BR';
-    else if (language === 'ja') langCode = 'ja-JP';
-    else if (language === 'ko') langCode = 'ko-KR';
-    else if (language === 'zh') langCode = 'zh-CN';
-    else if (language === 'gu') langCode = 'gu-IN';
-    // Add more mappings as needed
+      try {
+        console.log("Attempting to use Google Cloud TTS via backend...");
 
-    utterence.lang = langCode;
+        // Map language codes for backend
+        let langCode = 'hi'; // default
+        if (language === 'hi') langCode = 'hi';
+        else if (language === 'en') langCode = 'en';
+        else if (language === 'es') langCode = 'es';
+        else if (language === 'fr') langCode = 'fr';
+        else if (language === 'de') langCode = 'de';
+        else if (language === 'it') langCode = 'it';
+        else if (language === 'pt') langCode = 'pt';
+        else if (language === 'ja') langCode = 'ja';
+        else if (language === 'ko') langCode = 'ko';
+        else if (language === 'zh') langCode = 'zh';
+        else if (language === 'gu') langCode = 'gu';
 
-    const voices = window.speechSynthesis.getVoices()
-    // Find voice that matches the language
-    const voice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
-    if (voice) {
-      utterence.voice = voice;
-    }
+        // Call backend TTS API
+        const response = await axios.post(`${serverUrl}/api/tts/speak`, {
+          text: text,
+          language: langCode
+        }, {
+          responseType: 'blob', // Important: expect binary data
+          withCredentials: true
+        });
 
-    // Make the assistant more responsive by reducing delays
-    isSpeakingRef.current=true
-    setIsSpeaking(true);
-    utterence.onend=()=>{
-        console.log("Speech ended");
-        setAiText("");
-        isSpeakingRef.current = false;
-        setIsSpeaking(false);
-        // Further reduced delay from 300ms to 150ms for even faster response
-        setTimeout(() => {
-          startRecognition();
-        }, 150);
-    }
+        if (response.data) {
+          console.log("Received audio data from backend, playing...");
 
-    synth.speak(utterence);
+          // Create audio element and play
+          const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+
+          // Set up event handlers
+          audio.onplay = () => {
+            console.log("Google Cloud TTS audio started playing");
+            isSpeakingRef.current = true;
+            setIsSpeaking(true);
+          };
+
+          audio.onended = () => {
+            console.log("Google Cloud TTS audio finished playing");
+            setAiText("");
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+
+            // Clean up
+            URL.revokeObjectURL(audioUrl);
+
+            setTimeout(() => {
+              startRecognition();
+            }, 150);
+            resolve();
+          };
+
+          audio.onerror = (error) => {
+            console.error("Audio playback error:", error);
+            setAiText("");
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+
+            // Clean up
+            URL.revokeObjectURL(audioUrl);
+
+            setTimeout(() => {
+              startRecognition();
+            }, 150);
+            resolve();
+          };
+
+          // Play the audio
+          await audio.play();
+          console.log("Google Cloud TTS audio initiated successfully");
+
+        } else {
+          throw new Error("No audio data received from backend");
+        }
+
+      } catch (error) {
+        console.error("Google Cloud TTS failed, falling back to browser TTS:", error);
+
+        // Fallback to browser TTS if backend fails
+        try {
+          const utterance = new SpeechSynthesisUtterance(text);
+
+          // Map language to langCode for fallback
+          let langCode = 'en-US'; // default
+          if (language === 'hi') langCode = 'hi-IN';
+          else if (language === 'es') langCode = 'es-ES';
+          else if (language === 'fr') langCode = 'fr-FR';
+          else if (language === 'de') langCode = 'de-DE';
+          else if (language === 'it') langCode = 'it-IT';
+          else if (language === 'pt') langCode = 'pt-BR';
+          else if (language === 'ja') langCode = 'ja-JP';
+          else if (language === 'ko') langCode = 'ko-KR';
+          else if (language === 'zh') langCode = 'zh-CN';
+          else if (language === 'gu') langCode = 'gu-IN';
+
+          utterance.lang = langCode;
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+
+          utterance.onstart = () => {
+            console.log("Fallback browser TTS started");
+            isSpeakingRef.current = true;
+            setIsSpeaking(true);
+          };
+
+          utterance.onend = () => {
+            console.log("Fallback browser TTS ended");
+            setAiText("");
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+            setTimeout(() => {
+              startRecognition();
+            }, 150);
+            resolve();
+          };
+
+          utterance.onerror = (fallbackError) => {
+            console.error("Fallback browser TTS also failed:", fallbackError);
+            setAiText("");
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+            setTimeout(() => {
+              startRecognition();
+            }, 150);
+            resolve();
+          };
+
+          // Try to speak with browser TTS
+          if (synth) {
+            synth.speak(utterance);
+          } else {
+            console.error("Browser speech synthesis not available");
+            resolve();
+          }
+
+        } catch (fallbackError) {
+          console.error("All TTS methods failed:", fallbackError);
+          setAiText("");
+          isSpeakingRef.current = false;
+          setIsSpeaking(false);
+          setTimeout(() => {
+            startRecognition();
+          }, 150);
+          resolve();
+        }
+      }
+    });
   }
 
   const handleStop = () => {
@@ -1398,7 +1514,7 @@ Create alerts for:
         setCurrentTeacher(teacher);
         setCurrentLesson(teacherLessons[teacherType + '-teacher'][0]);
         setShowLessonModal(true);
-        speak(`Starting your ${teacher.title} lesson! Let's begin with the fundamentals.`);
+        await speak(`Starting your ${teacher.title} lesson! Let's begin with the fundamentals.`);
       }
       return;
     }
@@ -1421,17 +1537,17 @@ Create alerts for:
       ];
       setTeacherProgress(mockProgress);
       setShowProgressModal(true);
-      speak("Here's your learning progress across all subjects.");
+      await speak("Here's your learning progress across all subjects.");
       return;
     }
 
     if (type === 'teacher-ask') {
       setShowAskModal(true);
-      speak("What would you like to ask your teacher? Please select a teacher and type your question.");
+      await speak("What would you like to ask your teacher? Please select a teacher and type your question.");
       return;
     }
 
-    speak(data.response, data.language || 'hi');
+    await speak(data.response, data.language || 'hi');
 
     // Define popup configurations for different types
     const popupConfigs = {

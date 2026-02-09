@@ -10,6 +10,7 @@ import weatherRouter from "./routes/weather.routes.js"
 import autonomousRouter from "./routes/autonomous.routes.js"
 import multilingualRouter from "./routes/multilingual.routes.js"
 import feedbackRouter from "./routes/feedback.routes.js"
+import ttsRouter from "./routes/tts.routes.js"
 import geminiResponse from "./gemini.js"
 import User from "./models/user.model.js"
 import nodemailer from "nodemailer"
@@ -53,6 +54,7 @@ app.use("/api/weather",weatherRouter)
 app.use("/api/autonomous",autonomousRouter)
 app.use("/api/multilingual",multilingualRouter)
 app.use("/api/feedback",feedbackRouter)
+app.use("/api/tts",ttsRouter)
 
 // Nodemailer setup (only if credentials are available)
 let transporter = null;
